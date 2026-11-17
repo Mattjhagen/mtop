@@ -1454,6 +1454,8 @@ namespace Net {
 
 }
 
+#include "mtop_ups.hpp"
+
 namespace Proc {
 	int width_p = 55, height_p = 68;
 	int min_width = 44, min_height = 16;
@@ -1946,7 +1948,7 @@ namespace Proc {
 			selected_name.clear();
 		}
 		redraw = false;
-		return out + Fx::reset;
+		return out + MtopUps::draw(Proc::x, Proc::y + Proc::height, Proc::width) + Fx::reset;
 	}
 
 }
@@ -2233,6 +2235,8 @@ namespace Draw {
 		#else
 			y = (cpu_bottom and Cpu::shown) ? 1 : Cpu::height + 1;
 		#endif
+			MtopUps::height = height >= 25 ? 10 : 0;
+			height -= MtopUps::height;
 			select_max = height - 3;
 			box = createBox(x, y, width, height, Theme::c("proc_box"), true, "proc", "", 4);
 		}

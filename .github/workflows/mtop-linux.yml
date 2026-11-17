@@ -1,0 +1,14 @@
+name: mtop Linux build
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -j2 GPU_SUPPORT=false
+      - run: ./bin/btop --version
+      - run: g++ -std=c++20 mtop/test-ups.cpp -o /tmp/test-ups && /tmp/test-ups
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mtop-linux-x86_64
+          path: bin/btop

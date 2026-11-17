@@ -78,7 +78,7 @@ namespace Global {
 		{"#801414", "██████╔╝   ██║   ╚██████╔╝██║        ╚═╝    ╚═╝"},
 		{"#000000", "╚═════╝    ╚═╝    ╚═════╝ ╚═╝"},
 	};
-	const string Version = "1.3.0";
+	const string Version = "1.3.0-mtop.1";
 
 	int coreCount;
 	string overlay;
