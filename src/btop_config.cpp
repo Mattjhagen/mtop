@@ -324,17 +324,22 @@ namespace Config {
 	// Returns a valid config dir or an empty optional
 	// The config dir might be read only, a warning is printed, but a path is returned anyway
 	[[nodiscard]] std::optional<fs::path> get_config_dir() noexcept {
+#ifdef MTOP_PACKAGE
+		constexpr auto config_name = "mtop";
+#else
+		constexpr auto config_name = "btop";
+#endif
 		fs::path config_dir;
 		{
 			std::error_code error;
 			if (const auto xdg_config_home = std::getenv("XDG_CONFIG_HOME"); xdg_config_home != nullptr) {
 				if (fs::exists(xdg_config_home, error)) {
-					config_dir = fs::path(xdg_config_home) / "btop";
+					config_dir = fs::path(xdg_config_home) / config_name;
 				}
 			} else if (const auto home = std::getenv("HOME"); home != nullptr) {
 				error.clear();
 				if (fs::exists(home, error)) {
-					config_dir = fs::path(home) / ".config" / "btop";
+					config_dir = fs::path(home) / ".config" / config_name;
 				}
 				if (error) {
 					fmt::print(stderr, "\033[0;31mWarning: \033[0m{} could not be accessed: {}\n", config_dir.string(), error.message());

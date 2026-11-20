@@ -1,0 +1,109 @@
+name: Debian packages and APT
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish a signed APT snapshot to GitHub Pages
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main' && 'mtop-apt-publish' || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  packages:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build Debian source and binary packages
+        run: |
+          git archive HEAD | docker run --rm -i -v "$RUNNER_TEMP:/output" debian:12 sh -euxc '
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential debhelper cmake
+            mkdir /tmp/mtop
+            tar -xf - -C /tmp/mtop
+            cd /tmp/mtop
+            dpkg-buildpackage -us -uc -j2
+            mkdir /output/packages
+            cp /tmp/mtop_* /tmp/mtop-dbgsym_*.deb /output/packages/
+          '
+      - name: Test package installation on Debian and Ubuntu
+        run: |
+          for image in debian:12 debian:13 ubuntu:24.04; do
+            docker run --rm -v "$RUNNER_TEMP/packages:/packages:ro" "$image" sh -euxc '
+              apt-get update
+              apt-get install -y /packages/mtop_*_$(dpkg --print-architecture).deb
+              mtop --version
+              test -x /usr/bin/upsc
+              test -r /usr/share/mtop/themes/nord.theme
+              apt-get remove -y mtop
+              test ! -e /usr/bin/mtop
+            '
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: debian-${{ matrix.arch }}
+          path: ${{ runner.temp }}/packages/*
+          if-no-files-found: error
+
+  archive:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main'
+    needs: packages
+    runs-on: ubuntu-24.04
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: debian-*
+          path: packages
+      - run: sudo apt-get update && sudo apt-get install -y apt-utils
+      - name: Build and sign repository
+        env:
+          APT_SIGNING_SUBKEY: ${{ secrets.APT_SIGNING_SUBKEY }}
+        run: scripts/build-apt-repo.sh packages site
+      - name: Verify signed APT installation
+        run: |
+          for image in debian:12 debian:13 ubuntu:24.04; do
+            docker run --rm -v "$PWD/site/apt:/apt-repo:ro" "$image" sh -euxc '
+              echo "deb [signed-by=/apt-repo/mtop-archive-keyring.asc] file:/apt-repo stable main" > /etc/apt/sources.list.d/mtop.list
+              apt-get update -o APT::Update::Error-Mode=any
+              apt-get install -y mtop
+              mtop --version
+            '
+          done
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: site
+
+  deploy:
+    needs: archive
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        id: deployment

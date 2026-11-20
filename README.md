@@ -4,6 +4,12 @@ A btop 1.3.0 fork with a native UPS panel beneath the process list. The process 
 
 Based on [aristocratos/btop](https://github.com/aristocratos/btop/tree/v1.3.0), Apache-2.0. See [upstream documentation](README.btop.md) and [LICENSE](LICENSE). The mtop changes are AI generated.
 
+## Install with APT
+
+The project runs a signed APT repository for Debian 12 and 13 and Ubuntu 24.04
+on amd64 and arm64. See the [APT installation instructions](docs/apt.md) for
+setup and key verification.
+
 ## Build and install on Ubuntu
 
 ```sh

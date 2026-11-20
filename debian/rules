@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DBTOP_GPU=OFF -DBTOP_LTO=OFF -DMTOP_PACKAGE=ON
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	$(CXX) -std=c++20 mtop/test-ups.cpp -o debian/test-ups
+	debian/test-ups
+endif
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -f debian/test-ups

@@ -880,13 +880,20 @@ int main(int argc, char **argv) {
 			Global::self_path = fs::path(buf).remove_filename();
 	}
 #endif
+#ifdef MTOP_PACKAGE
+	constexpr auto relative_theme_path = "../share/mtop/themes";
+	constexpr auto system_theme_paths = {"/usr/local/share/mtop/themes", "/usr/share/mtop/themes"};
+#else
+	constexpr auto relative_theme_path = "../share/btop/themes";
+	constexpr auto system_theme_paths = {"/usr/local/share/btop/themes", "/usr/share/btop/themes"};
+#endif
 	if (std::error_code ec; not Global::self_path.empty()) {
-		Theme::theme_dir = fs::canonical(Global::self_path / "../share/btop/themes", ec);
+		Theme::theme_dir = fs::canonical(Global::self_path / relative_theme_path, ec);
 		if (ec or not fs::is_directory(Theme::theme_dir) or access(Theme::theme_dir.c_str(), R_OK) == -1) Theme::theme_dir.clear();
 	}
 	//? If relative path failed, check two most common absolute paths
 	if (Theme::theme_dir.empty()) {
-		for (auto theme_path : {"/usr/local/share/btop/themes", "/usr/share/btop/themes"}) {
+		for (auto theme_path : system_theme_paths) {
 			if (fs::is_directory(fs::path(theme_path)) and access(theme_path, R_OK) != -1) {
 				Theme::theme_dir = fs::path(theme_path);
 				break;
