@@ -5,8 +5,7 @@ Upstream: https://github.com/aristocratos/btop
 btop and the mtop modifications are distributed under Apache-2.0.
 The full license is available in /usr/share/common-licenses/Apache-2.0.
 
-The bundled fmt headers are copyright (c) 2012 - present, Victor Zverovich.
-  Formatting library for C++
+The bundled fmt headers are distributed under the following license.
 
   Copyright (c) 2012 - present, Victor Zverovich
 
@@ -35,3 +34,8 @@ The bundled fmt headers are copyright (c) 2012 - present, Victor Zverovich.
   of this Software are embedded into a machine-executable object form of such
   source code, you may redistribute such embedded portions in such object form
   without including the above copyright and permission notices.
+
+The generated include/widechar_width.hpp comes from widecharwidth by
+ridiculous_fish, which is dedicated to the public domain under CC0 1.0.
+https://github.com/ridiculousfish/widecharwidth
+https://creativecommons.org/publicdomain/zero/1.0/

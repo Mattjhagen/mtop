@@ -34,11 +34,12 @@ jobs:
           persist-credentials: false
       - name: Build Debian source and binary packages
         run: |
-          git archive HEAD | docker run --rm -i -v "$RUNNER_TEMP:/output" debian:12 sh -euxc '
+          git archive --output="$RUNNER_TEMP/source.tar" HEAD
+          docker run --rm -v "$RUNNER_TEMP/source.tar:/source.tar:ro" -v "$RUNNER_TEMP:/output" debian:12 sh -euxc '
             apt-get update
             apt-get install -y --no-install-recommends build-essential debhelper cmake
             mkdir /tmp/mtop
-            tar -xf - -C /tmp/mtop
+            tar -xf /source.tar -C /tmp/mtop
             cd /tmp/mtop
             dpkg-buildpackage -us -uc -j2
             mkdir /output/packages
@@ -53,6 +54,7 @@ jobs:
               mtop --version
               test -x /usr/bin/upsc
               test -r /usr/share/mtop/themes/nord.theme
+              test ! -e /usr/bin/btop
               apt-get remove -y mtop
               test ! -e /usr/bin/mtop
             '

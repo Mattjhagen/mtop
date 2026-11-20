@@ -882,10 +882,10 @@ int main(int argc, char **argv) {
 #endif
 #ifdef MTOP_PACKAGE
 	constexpr auto relative_theme_path = "../share/mtop/themes";
-	constexpr auto system_theme_paths = {"/usr/local/share/mtop/themes", "/usr/share/mtop/themes"};
+	constexpr const char* system_theme_paths[] = {"/usr/local/share/mtop/themes", "/usr/share/mtop/themes"};
 #else
 	constexpr auto relative_theme_path = "../share/btop/themes";
-	constexpr auto system_theme_paths = {"/usr/local/share/btop/themes", "/usr/share/btop/themes"};
+	constexpr const char* system_theme_paths[] = {"/usr/local/share/btop/themes", "/usr/share/btop/themes"};
 #endif
 	if (std::error_code ec; not Global::self_path.empty()) {
 		Theme::theme_dir = fs::canonical(Global::self_path / relative_theme_path, ec);

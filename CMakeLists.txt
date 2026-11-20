@@ -198,5 +198,4 @@ else()
   install(FILES "Img/icon.png" DESTINATION "share/icons/hicolor/48x48/apps" RENAME "btop.png")
   install(FILES "Img/icon.svg" DESTINATION "share/icons/hicolor/scalable/apps" RENAME "btop.svg")
   install(DIRECTORY "themes" DESTINATION "share/btop")
-
 endif()
